@@ -50,9 +50,13 @@ if __name__ == '__main__':
     # Assign a cursor 'c' to the connection
     c = con.cursor()
 
-    # 1. What are the 3 most popular articles.
+    # 1. What are the 3 most popular articles
     for title, views in popular_article():
         print("{} -- {} views".format(title, views))
+
+    # 2. What are the most popular authors from a descending list
+    for name, views in popular_authors():
+        print("{} -- {} views".format(name, views))
 
     # Close the Database
     con.close()
