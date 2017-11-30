@@ -49,7 +49,7 @@ def popular_article():
     Use the info_log VIEW and extract the following information:
         * title and num
 
-    The list will be ordered with the most views on top and limited to the first 3
+    The list will be ordered with the most views on top and limited to the first 3 # noqa
     '''
     c.execute(
         "SELECT title, num \
@@ -94,7 +94,7 @@ def days_with_errors():
         * list_error: list all the 404 reqs, grouped in date and total columns
         * list_perc: This list calculates the percentage per day
 
-    The main SELECT uses list_perc and only shows the days with more than 1% errors
+    The main SELECT uses list_perc and only shows the days with more than 1% errors # noqa
     '''
     c.execute(
         "WITH list_total AS ( \
@@ -110,7 +110,8 @@ def days_with_errors():
         SELECT lt_date, ( le_total * 100 / lt_total ) AS perc_error_req  \
         FROM list_total AS lt JOIN list_error AS le \
         ON lt.lt_date = le.le_date ) \
-        SELECT to_char(lt_date, 'FMMonth dd, YYYY') AS re_date, perc_error_req \
+        SELECT to_char(lt_date, 'FMMonth dd, YYYY') AS re_date, \
+        perc_error_req \
         FROM list_perc \
         WHERE perc_error_req >= 1"
     )
