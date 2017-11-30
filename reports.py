@@ -83,6 +83,18 @@ def popular_authors():
     a = c.fetchall()
     return a
 
+def days_with_errors():
+    '''
+    Using the log table calculate the percentage of errors  per day
+    '''
+    c.execute(
+        "SELECT time, status \
+    	FROM log \
+    	LIMIT 3"
+    )
+    a = c.fetchall()
+    return a
+
 
 if __name__ == '__main__':
     # Open the database and store the connection in con
@@ -106,6 +118,12 @@ if __name__ == '__main__':
     for name, views in popular_authors():
         print("{} -- {} views".format(name, views))
     print("")
+
+    # 3. Days with more than 1% error requests
+    print("Days with more than 1% error requests")
+    print("=====================================")
+    for date, perc_error_req in days_with_errors():
+        print("{} -- {}% errors".format(date, perc_error_req))
 
     # Close the Database
     con.close()
