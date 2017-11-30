@@ -50,6 +50,9 @@ if __name__ == '__main__':
     # Assign a cursor 'c' to the connection
     c = con.cursor()
 
+    # Create a VIEW called info_log
+    create_view()
+
     # 1. What are the 3 most popular articles
     for title, views in popular_article():
         print("{} -- {} views".format(title, views))
