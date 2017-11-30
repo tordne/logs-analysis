@@ -31,16 +31,16 @@ def create_view():
     c.execute("DROP VIEW IF EXISTS info_log")
     c.execute(
         "CREATE VIEW info_log AS \
-    	WITH slug_list AS ( \
-    	SELECT author, title, '%' || slug AS path_q \
-    	FROM articles \
-    	), log_list AS ( \
-    	SELECT path, count(*) AS num \
-    	FROM log \
-    	GROUP BY path ) \
-    	SELECT author, title, path, num \
-    	FROM slug_list, log_list \
-    	WHERE path LIKE path_q"
+        WITH slug_list AS ( \
+        SELECT author, title, '%' || slug AS path_q \
+        FROM articles \
+        ), log_list AS ( \
+        SELECT path, count(*) AS num \
+        FROM log \
+        GROUP BY path ) \
+        SELECT author, title, path, num \
+        FROM slug_list, log_list \
+        WHERE path LIKE path_q"
     )
 
 
@@ -75,22 +75,44 @@ def popular_authors():
     '''
     c.execute(
         "SELECT name, sum(num) AS total \
-		FROM authors RIGHT JOIN info_log \
-		ON authors.id = info_log.author \
-		GROUP BY name \
-		ORDER BY total DESC"
+        FROM authors RIGHT JOIN info_log \
+        ON authors.id = info_log.author \
+        GROUP BY name \
+        ORDER BY total DESC"
     )
     a = c.fetchall()
     return a
 
+
 def days_with_errors():
     '''
-    Using the log table calculate the percentage of errors  per day
+    Using the log table calculate the percentage of errors per day
+    and list the days with more than 1% of errors
+
+    The WITH statement consist of 3 lists
+        * list_total: A list with 2 culumns Date and the total requests per day
+        * list_error: list all the 404 reqs, grouped in date and total columns
+        * list_perc: This list calculates the percentage per day
+
+    The main SELECT uses list_perc and only shows the days with more than 1% errors
     '''
     c.execute(
-        "SELECT time, status \
-    	FROM log \
-    	LIMIT 3"
+        "WITH list_total AS ( \
+        SELECT date(time) AS lt_date, count(date(time)) AS lt_total \
+        FROM log \
+        GROUP BY lt_date \
+        ), list_error AS ( \
+        SELECT date(time) as le_date, count(date(time)) AS le_total \
+        FROM log \
+        WHERE status LIKE '404%' \
+        GROUP BY le_date \
+        ), list_perc AS ( \
+        SELECT lt_date, ( le_total * 100 / lt_total ) AS perc_error_req  \
+        FROM list_total AS lt JOIN list_error AS le \
+        ON lt.lt_date = le.le_date ) \
+        SELECT to_char(lt_date, 'FMMonth dd, YYYY') AS re_date, perc_error_req \
+        FROM list_perc \
+        WHERE perc_error_req >= 1"
     )
     a = c.fetchall()
     return a
