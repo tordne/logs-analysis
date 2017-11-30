@@ -3,17 +3,18 @@
 import psycopg2
 
 
-def popular_article():
+def create_view():
     '''
     Connect to the news database and
-    extract the 3 most popular articles.
+    extract a VIEW info_log which joins info about the author
+    and articles with the logs
 
     The WITH query makes 2 lists
         * slug_list
         * log_list
 
     slug_list:
-        * Takes the title and slug from all the articles
+        * Takes the author, title and slug from all the articles
         * Modifies the slug and add a % in front of the slug
 
     log_list:
@@ -21,22 +22,35 @@ def popular_article():
         * It groups all the same path together and counts the total of each
 
     The main SELECT:
-        * Outputs the title and num
+        * Outputs the author, title, path and num
         * It compares both log_list and slug_list
-        * It will look in all the paths and will only return the ones which compare to path_q
-        * The list will be ordered with the most views on top and limited to the first 3
+        * It will look in all the paths
+          and will only return the ones which compare to path_q
+    '''
+    c.execute("CREATE VIEW info_log AS \
+    	WITH slug_list AS ( \
+    	SELECT author, title, '%' || slug AS path_q \
+    	FROM articles \
+    	), log_list AS ( \
+    	SELECT path, count(*) AS num \
+    	FROM log \
+    	GROUP BY path ) \
+    	SELECT author, title, path, num \
+    	FROM slug_list, log_list \
+    	WHERE path LIKE path_q"
+    	)
+
+
+def popular_article():
+    '''
+    Use the info_log VIEW and extract the following information:
+    	* title and num
+
+    The list will be ordered with the most views on top and limited to the first 3
     '''
     c.execute(
-        "WITH slug_list AS ( \
-        SELECT title, '%' || slug AS path_q \
-        FROM articles \
-        ), log_list AS ( \
-        SELECT path, count(*) AS num \
-        FROM log\
-        GROUP BY path) \
-        SELECT title, num \
-        FROM slug_list, log_list \
-        WHERE path LIKE path_q \
+        "SELECT title, num \
+        FROM info_log \
         ORDER BY num DESC \
         LIMIT 3"
     )
@@ -58,8 +72,8 @@ if __name__ == '__main__':
         print("{} -- {} views".format(title, views))
 
     # 2. What are the most popular authors from a descending list
-    for name, views in popular_authors():
+	'''    for name, views in popular_authors():
         print("{} -- {} views".format(name, views))
-
+	'''
     # Close the Database
     con.close()
