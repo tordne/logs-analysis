@@ -94,12 +94,18 @@ if __name__ == '__main__':
     create_view()
 
     # 1. What are the 3 most popular articles
+    print("The 3 most popular articles")
+    print("===========================")
     for title, views in popular_article():
         print("{} -- {} views".format(title, views))
+    print("")
 
     # 2. What are the most popular authors from a descending list
+    print("The most popular authors")
+    print("========================")
     for name, views in popular_authors():
         print("{} -- {} views".format(name, views))
+    print("")
 
     # Close the Database
     con.close()
